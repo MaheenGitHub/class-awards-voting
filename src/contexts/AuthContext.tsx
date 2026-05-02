@@ -9,6 +9,7 @@ import {
 } from 'firebase/auth'
 import { auth, googleProvider } from '@/lib/firebase'
 import { createAnonymousUserId, isValidDomain, isAdmin } from '@/lib/auth'
+import { getStudents } from '@/lib/firestore'
 import { AnonymousUser } from '@/types'
 
 interface AuthContextType {
@@ -38,10 +39,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!isValidDomain(userEmail)) {
           // Immediately sign out the unauthorized user
           await signOut(auth)
-          // Show error popup
-          alert('Error: Please use your university student email to participate!')
+          console.error('Please use your BITF22 student email (bitf22mXXX@pucit.edu.pk) to participate!')
           setIsLoading(false)
           return
+        }
+
+        // Verify user is in the students collection (BITF22 batch verification)
+        try {
+          const students = await getStudents()
+          const isStudentInBatch = students.some(student => 
+            student.rollNumber?.toLowerCase() === userEmail.split('@')[0].toLowerCase()
+          )
+          
+          if (!isStudentInBatch) {
+            // Sign out if not in the students collection
+            await signOut(auth)
+            console.error('Your email is not registered in the class student list. Please contact the administrator.')
+            setIsLoading(false)
+            return
+          }
+        } catch (error) {
+          console.error('Error verifying student:', error)
+          // Allow login but show warning if student verification fails
+          console.warn('Could not verify student enrollment. Please contact the administrator if you believe this is an error.')
         }
 
         setUser(firebaseUser)
@@ -74,15 +94,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!isValidDomain(userEmail)) {
         // Sign out immediately if domain is invalid
         await signOut(auth)
-        alert('Error: Please use your university student email to participate!')
+        console.error('Please use your BITF22 student email (bitf22mXXX@pucit.edu.pk) to participate!')
         throw new Error('Unauthorized email domain')
       }
+      
     } catch (error) {
       console.error('Sign in error:', error)
-      // Don't re-throw if it's our validation error to avoid duplicate alerts
-      if (error instanceof Error && error.message !== 'Unauthorized email domain') {
-        throw error
-      }
+      throw error
     }
   }
 
