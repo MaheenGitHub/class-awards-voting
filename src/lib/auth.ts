@@ -7,7 +7,7 @@ import { createHash } from 'crypto'
 export function createAnonymousUserId(email: string): string {
   // Use simple concatenation to match Firestore rules (for now)
   // In production, this should use proper hashing
-  const salt = process.env.NEXT_PUBLIC_HASH_SALT || 'class-voting-salt-2024'
+  const salt = process.env.NEXT_PUBLIC_HASH_SALT || ''
   return email + salt
 }
 
