@@ -33,18 +33,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(true)
       
       if (firebaseUser) {
-        // Validate domain
-        if (!isValidDomain(firebaseUser.email || '')) {
+        // Strictly validate domain - must end with @bitf22m0--.pucit.edu.pk
+        const userEmail = firebaseUser.email || ''
+        if (!isValidDomain(userEmail)) {
+          // Immediately sign out the unauthorized user
           await signOut(auth)
+          // Show error popup
+          alert('Error: Please use your university student email to participate!')
           setIsLoading(false)
           return
         }
 
         setUser(firebaseUser)
-        setIsAdminUser(isAdmin(firebaseUser.email || ''))
+        setIsAdminUser(isAdmin(userEmail))
         
         // Create anonymous user data
-        const anonymousId = createAnonymousUserId(firebaseUser.email || '')
+        const anonymousId = createAnonymousUserId(userEmail)
         setAnonymousUser({
           anonymousId,
           hasVoted: false, // This will be checked from Firestore
@@ -63,10 +67,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async () => {
     try {
-      await signInWithPopup(auth, googleProvider)
+      const result = await signInWithPopup(auth, googleProvider)
+      
+      // Additional immediate validation - double check email domain
+      const userEmail = result.user.email || ''
+      if (!isValidDomain(userEmail)) {
+        // Sign out immediately if domain is invalid
+        await signOut(auth)
+        alert('Error: Please use your university student email to participate!')
+        throw new Error('Unauthorized email domain')
+      }
     } catch (error) {
       console.error('Sign in error:', error)
-      throw error
+      // Don't re-throw if it's our validation error to avoid duplicate alerts
+      if (error instanceof Error && error.message !== 'Unauthorized email domain') {
+        throw error
+      }
     }
   }
 
@@ -75,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await signOut(auth)
     } catch (error) {
       console.error('Sign out error:', error)
-      throw error
+      throw error instanceof Error ? error : new Error('Sign out failed')
     }
   }
 

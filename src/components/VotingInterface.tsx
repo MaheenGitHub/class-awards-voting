@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { getCategories, getStudents, submitVote, getUserVotes } from '@/lib/firestore'
+import { getCategories, getStudents, submitVote, getUserVotes, hasUserVoted } from '@/lib/firestore'
 import { Category, Student, UserVote } from '@/types'
+import SearchableDropdown from './SearchableDropdown'
 
 export default function VotingInterface() {
   const { user, anonymousUser } = useAuth()
@@ -13,10 +14,33 @@ export default function VotingInterface() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [hasVoted, setHasVoted] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [showReview, setShowReview] = useState(false)
 
   useEffect(() => {
     loadData()
   }, [])
+
+  useEffect(() => {
+    if (anonymousUser) {
+      checkIfUserHasVoted()
+    }
+  }, [anonymousUser])
+
+  const checkIfUserHasVoted = async () => {
+    if (!anonymousUser) return
+    
+    try {
+      const hasVotedBefore = await hasUserVoted(anonymousUser.anonymousId)
+      if (hasVotedBefore) {
+        setHasVoted(true)
+        // Load existing votes
+        const existingVotes = await getUserVotes(anonymousUser.anonymousId)
+        setUserVotes(existingVotes)
+      }
+    } catch (error) {
+      console.error('Error checking vote status:', error)
+    }
+  }
 
   const loadData = async () => {
     try {
@@ -41,14 +65,37 @@ export default function VotingInterface() {
   }
 
   const handleVoteChange = (categoryId: string, studentId: string) => {
+    if (hasVoted) return // Prevent changes after submission
+    
     setUserVotes(prev => ({
       ...prev,
       [categoryId]: studentId,
     }))
+
+    // Auto-scroll to next category after selection
+    setTimeout(() => {
+      const currentIndex = categories.findIndex(cat => cat.id === categoryId)
+      if (currentIndex !== -1 && currentIndex < categories.length - 1) {
+        const nextCategoryId = categories[currentIndex + 1].id
+        const nextElement = document.getElementById(`category-${nextCategoryId}`)
+        if (nextElement) {
+          nextElement.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+          })
+        }
+      }
+    }, 300) // Small delay to allow UI update
   }
 
   const handleSubmit = async () => {
     if (!anonymousUser || !user) return
+
+    // Check if user has already voted
+    if (hasVoted) {
+      alert('You have already submitted your votes. Each user can only vote once.')
+      return
+    }
 
     // Check if user has voted for all categories
     const unvotedCategories = categories.filter(cat => !userVotes[cat.id])
@@ -57,6 +104,13 @@ export default function VotingInterface() {
       return
     }
 
+    // Show review screen instead of submitting directly
+    setShowReview(true)
+  }
+
+  const handleFinalSubmit = async () => {
+    if (!anonymousUser) return
+    
     setIsSubmitting(true)
     
     try {
@@ -94,16 +148,23 @@ export default function VotingInterface() {
   if (hasVoted) {
     return (
       <div className="text-center py-12">
-        <div className="text-6xl mb-4">🎉</div>
-        <h2 className="text-3xl font-bold text-gray-800 mb-4">
-          Thank you for voting!
+        <div className="text-8xl mb-6 animate-bounce-soft">🎉</div>
+        <h2 className="text-4xl font-bold text-gray-800 mb-4 animate-fade-in">
+          Your votes have been submitted!
         </h2>
-        <p className="text-gray-600 mb-4">
-          Your vote has been successfully submitted.
-        </p>
-        <p className="text-gray-500 italic">
-          Results will be revealed soon 👀
-        </p>
+        <div className="bg-gradient-to-r from-pastel-pink to-pastel-purple rounded-2xl p-6 mb-6 max-w-md mx-auto">
+          <p className="text-lg text-gray-700 mb-3">
+            Results coming soon... 👀
+          </p>
+          <p className="text-gray-600 italic">
+            Stay tuned for the reveal!
+          </p>
+        </div>
+        <div className="flex justify-center space-x-2">
+          <span className="text-2xl animate-pulse">⭐</span>
+          <span className="text-2xl animate-pulse delay-100">🏆</span>
+          <span className="text-2xl animate-pulse delay-200">🎊</span>
+        </div>
       </div>
     )
   }
@@ -112,34 +173,146 @@ export default function VotingInterface() {
   const totalCategories = categories.length
   const progressPercentage = (completedVotes / totalCategories) * 100
 
+  // Review Screen Component
+  if (showReview) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        {/* Review Header */}
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">
+            Review your votes 👇
+          </h2>
+          <p className="text-gray-600 text-center">
+            Please review your selections before submitting. This action cannot be undone.
+          </p>
+        </div>
+
+        {/* Review List */}
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 max-h-96 overflow-y-auto">
+          <div className="space-y-4">
+            {categories.map((category) => {
+              const selectedStudent = students.find(s => s.id === userVotes[category.id])
+              return (
+                <div key={category.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center">
+                    <span className="text-2xl mr-3">{category.emoji}</span>
+                    <div>
+                      <h4 className="font-semibold text-gray-800">{category.title}</h4>
+                      <p className="text-sm text-gray-600">{category.description}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-medium text-primary-600">
+                      {selectedStudent?.name || 'Not selected'}
+                    </div>
+                    {selectedStudent?.rollNumber && (
+                      <div className="text-sm text-gray-500">
+                        ({selectedStudent.rollNumber})
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Review Actions */}
+        <div className="flex gap-4 justify-center">
+          <button
+            onClick={() => setShowReview(false)}
+            disabled={isSubmitting}
+            className="px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-full hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Edit
+          </button>
+          
+          <button
+            onClick={handleFinalSubmit}
+            disabled={isSubmitting}
+            className="px-8 py-4 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center"
+          >
+            {isSubmitting ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                Submitting...
+              </>
+            ) : (
+              <>
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                Submit ✅
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="max-w-4xl mx-auto">
       {/* Trust Message */}
-      <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border-2 border-pastel-green">
-        <div className="flex items-center justify-center mb-2">
-          <span className="text-2xl mr-2">🔒</span>
-          <h3 className="text-lg font-semibold text-gray-800">
-            Your vote is completely anonymous
+      <div className="bg-gradient-to-r from-pastel-green to-pastel-blue rounded-2xl shadow-lg p-6 mb-8 border-2 border-green-300">
+        <div className="flex items-center justify-center mb-4">
+          <span className="text-3xl mr-3">🔒</span>
+          <h3 className="text-xl font-bold text-gray-800">
+            Your vote is anonymous.
           </h3>
         </div>
-        <p className="text-gray-600 text-center">
-          Your email is only used to verify you belong to the class. It is NOT stored or linked to your responses.
+        <div className="bg-white/80 rounded-xl p-4 mb-3">
+          <p className="text-lg font-semibold text-gray-700 text-center">
+            Your email is NOT stored or linked to your answers.
+          </p>
+        </div>
+        <p className="text-gray-600 text-center text-sm">
+          Your email is only used once to verify you belong to the class.
         </p>
       </div>
 
       {/* Progress Indicator */}
       <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
-        <div className="flex justify-between items-center mb-2">
+        <div className="flex justify-between items-center mb-4">
           <span className="text-sm font-medium text-gray-600">Progress</span>
           <span className="text-sm font-medium text-primary-600">
             {completedVotes}/{totalCategories} completed
           </span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-3">
-          <div 
-            className="bg-gradient-to-r from-primary-400 to-primary-600 h-3 rounded-full transition-all duration-300"
-            style={{ width: `${progressPercentage}%` }}
-          ></div>
+        
+        {/* Visual Progress Blocks */}
+        <div className="flex gap-1 mb-2">
+          {Array.from({ length: totalCategories }, (_, index) => (
+            <div
+              key={index}
+              className={`flex-1 h-2 rounded-full transition-all duration-300 ${
+                index < completedVotes
+                  ? 'bg-gradient-to-r from-primary-400 to-primary-600'
+                  : 'bg-gray-200'
+              }`}
+            ></div>
+          ))}
+        </div>
+        
+        {/* Progress Text with Blocks */}
+        <div className="text-center">
+          <span className="text-lg font-mono text-gray-700">
+            {Array.from({ length: totalCategories }, (_, index) => (
+              <span
+                key={index}
+                className={`inline-block w-6 h-6 mx-0.5 rounded text-xs font-bold leading-6 transition-all duration-300 ${
+                  index < completedVotes
+                    ? 'bg-primary-500 text-white'
+                    : 'bg-gray-200 text-gray-500'
+                }`}
+              >
+                {index < completedVotes ? '✓' : ''}
+              </span>
+            ))}
+          </span>
         </div>
       </div>
 
@@ -148,6 +321,7 @@ export default function VotingInterface() {
         {categories.map((category) => (
           <div
             key={category.id}
+            id={`category-${category.id}`}
             className="bg-white rounded-2xl shadow-lg p-6 card-hover border-2 border-transparent hover:border-primary-200"
           >
             <div className="flex items-center mb-4">
@@ -162,27 +336,13 @@ export default function VotingInterface() {
               </div>
             </div>
             
-            <div className="relative">
-              <select
-                value={userVotes[category.id] || ''}
-                onChange={(e) => handleVoteChange(category.id, e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-primary-400 focus:outline-none transition-colors appearance-none bg-white cursor-pointer"
-                disabled={hasVoted}
-              >
-                <option value="">Select a student...</option>
-                {students.map((student) => (
-                  <option key={student.id} value={student.id}>
-                    {student.name} {student.rollNumber && `(${student.rollNumber})`}
-                  </option>
-                ))}
-              </select>
-              
-              {userVotes[category.id] && (
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <span className="text-green-500">✓</span>
-                </div>
-              )}
-            </div>
+            <SearchableDropdown
+              students={students}
+              value={userVotes[category.id] || ''}
+              onChange={(studentId) => handleVoteChange(category.id, studentId)}
+              placeholder="Search student by name or roll number..."
+              disabled={hasVoted}
+            />
           </div>
         ))}
       </div>

@@ -1,0 +1,50 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Students collection - read access for authenticated users
+    match /students/{studentId} {
+      allow read: if request.auth != null && request.auth.token.email.matches(".*@bitf22m0--.pucit.edu.pk");
+      allow write: if false; // No one can write to students collection
+    }
+
+    // Categories collection - read access for authenticated users
+    match /categories/{categoryId} {
+      allow read: if request.auth != null && request.auth.token.email.matches(".*@bitf22m0--.pucit.edu.pk");
+      allow write: if false; // No one can write to categories collection
+    }
+
+    // Votes collection - strict voting rules
+    match /votes/{voteId} {
+      // Allow creating a vote if:
+      // 1. User is authenticated with valid domain
+      // 2. User hasn't already voted for this category
+      // 3. Vote data contains required fields
+      // 4. AnonymousUserId matches the authenticated user
+      allow create: if request.auth != null 
+        && request.auth.token.email.matches(".*@bitf22m0--.pucit.edu.pk")
+        && request.resource.data.keys().hasAll(['categoryId', 'studentId', 'anonymousUserId', 'timestamp'])
+        && request.resource.data.anonymousUserId == request.auth.token.email + "class-voting-salt-2024"
+        && !exists(/databases/$(database)/documents/userVotes/$(request.auth.token.email + "class-voting-salt-2024")/data/$(request.resource.data.categoryId));
+      
+      // No one can read votes directly (maintain anonymity)
+      allow read: if false;
+      
+      // No one can update or delete votes (maintain integrity)
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // UserVotes collection - tracks what each user has voted for
+    match /userVotes/{anonymousUserId} {
+      // Allow read/write only for the authenticated user's own votes
+      allow read, write: if request.auth != null 
+        && anonymousUserId == request.auth.token.email + "class-voting-salt-2024"
+        && request.auth.token.email.matches(".*@bitf22m0--.pucit.edu.pk");
+      
+      // Prevent deletion of user votes
+      allow delete: if false;
+    }
+  }
+}

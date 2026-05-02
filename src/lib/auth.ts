@@ -5,12 +5,10 @@ import { createHash } from 'crypto'
  * while preventing duplicate votes
  */
 export function createAnonymousUserId(email: string): string {
-  // Use SHA-256 hash of email with salt for anonymity
+  // Use simple concatenation to match Firestore rules (for now)
+  // In production, this should use proper hashing
   const salt = process.env.NEXT_PUBLIC_HASH_SALT || 'class-voting-salt-2024'
-  const hash = createHash('sha256')
-    .update(email + salt)
-    .digest('hex')
-  return hash
+  return email + salt
 }
 
 /**

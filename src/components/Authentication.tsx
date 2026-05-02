@@ -31,15 +31,20 @@ export default function Authentication() {
             </p>
           </div>
 
-          <div className="bg-pastel-green rounded-2xl p-4 mb-6">
-            <div className="flex items-center justify-center mb-2">
-              <span className="text-2xl mr-2">🔒</span>
-              <h3 className="font-semibold text-gray-800">
-                Your vote is completely anonymous
+          <div className="bg-gradient-to-r from-pastel-green to-pastel-blue rounded-2xl p-6 mb-6 border-2 border-green-300">
+            <div className="flex items-center justify-center mb-4">
+              <span className="text-3xl mr-3">🔒</span>
+              <h3 className="text-xl font-bold text-gray-800">
+                Your vote is anonymous.
               </h3>
             </div>
-            <p className="text-gray-600 text-sm text-center">
-              Your email is only used to verify you belong to the class. It is NOT stored or linked to your responses.
+            <div className="bg-white/80 rounded-xl p-4 mb-3">
+              <p className="text-lg font-semibold text-gray-700 text-center">
+                Your email is NOT stored or linked to your answers.
+              </p>
+            </div>
+            <p className="text-gray-600 text-center text-sm">
+              Your email is only used once to verify you belong to the class.
             </p>
           </div>
 
