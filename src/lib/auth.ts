@@ -15,8 +15,9 @@ export function createAnonymousUserId(email: string): string {
  * Validates if email belongs to the allowed domain
  */
 export function isValidDomain(email: string): boolean {
-  const allowedDomain = 'bitf22m0--.pucit.edu.pk'
-  return email.endsWith(`@${allowedDomain}`)
+  // Accept both formats: bitf22mXXX@pucit.edu.pk and bitf22m0XXX@pucit.edu.pk
+  const pattern = /^bitf22m\d{3}@pucit\.edu\.pk$/i
+  return pattern.test(email)
 }
 
 /**

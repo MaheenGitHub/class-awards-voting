@@ -27,18 +27,18 @@ export class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-gradient-to-br from-pastel-pink via-pastel-purple to-pastel-blue flex items-center justify-center px-4">
-          <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
-            <div className="text-6xl mb-4">😅</div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+        <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+          <div className="professional-card p-8 max-w-md w-full text-center">
+            <div className="text-4xl mb-4">😅</div>
+            <h2 className="title-text text-xl mb-4">
               Oops! Something went wrong
             </h2>
-            <p className="text-gray-600 mb-6">
+            <p className="description-text mb-6">
               The app encountered an error. Please refresh the page and try again.
             </p>
             <button
               onClick={() => window.location.reload()}
-              className="px-6 py-3 bg-primary-500 text-white rounded-full hover:bg-primary-600 transition-colors"
+              className="professional-button"
             >
               Refresh Page
             </button>

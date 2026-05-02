@@ -15,7 +15,7 @@ export default function SearchableDropdown({
   students, 
   value, 
   onChange, 
-  placeholder = "Select a student...",
+  placeholder = "Search student by name or roll number...",
   disabled = false 
 }: SearchableDropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
@@ -103,7 +103,7 @@ export default function SearchableDropdown({
   }
 
   return (
-    <div ref={dropdownRef} className="relative">
+    <div ref={dropdownRef} className="professional-dropdown">
       {/* Input Field */}
       <div className="relative">
         <input
@@ -113,17 +113,13 @@ export default function SearchableDropdown({
           onFocus={handleInputFocus}
           placeholder={placeholder}
           disabled={disabled}
-          className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-colors appearance-none cursor-pointer ${
-            disabled 
-              ? 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed' 
-              : 'bg-white border-gray-200 hover:border-primary-300 focus:border-primary-400'
-          }`}
+          className="professional-input"
         />
         
         {/* Dropdown Arrow */}
         <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
           <svg 
-            className={`w-5 h-5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} 
+            className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
             fill="none" 
             stroke="currentColor" 
             viewBox="0 0 24 24"
@@ -132,43 +128,42 @@ export default function SearchableDropdown({
           </svg>
         </div>
 
-        {/* Selected Student Checkmark */}
+        {/* Selected Student Indicator */}
         {selectedStudent && !isOpen && (
           <div className="absolute right-10 top-1/2 transform -translate-y-1/2">
-            <span className="text-green-500">✓</span>
+            <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
           </div>
         )}
       </div>
 
       {/* Dropdown List */}
       {isOpen && !disabled && (
-        <div className="absolute z-50 w-full mt-1 bg-white border-2 border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+        <div className="professional-dropdown-list">
           {filteredStudents.length > 0 ? (
             filteredStudents.map((student, index) => (
               <div
                 key={student.id}
                 onClick={() => handleSelect(student)}
-                className={`px-4 py-3 cursor-pointer transition-colors ${
-                  index === highlightedIndex
-                    ? 'bg-primary-100 text-primary-700'
-                    : 'hover:bg-gray-100'
-                } ${value === student.id ? 'bg-primary-50 text-primary-600 font-medium' : ''}`}
+                className={`professional-dropdown-item ${
+                  index === highlightedIndex ? 'highlighted' : ''
+                } ${value === student.id ? 'selected' : ''}`}
               >
                 <div className="flex justify-between items-center">
                   <span className="font-medium">
                     {student.rollNumber && `${student.rollNumber} - `}{student.name}
                   </span>
                 </div>
-                {value === student.id && (
-                  <div className="text-xs text-primary-600 mt-1">✓ Selected</div>
-                )}
               </div>
             ))
           ) : (
-            <div className="px-4 py-8 text-center text-gray-500">
-              <div className="text-4xl mb-2">🔍</div>
-              <p>No students found</p>
-              <p className="text-sm mt-1">Try searching by name or roll number</p>
+            <div className="px-4 py-8 text-center">
+              <svg className="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <p className="description-text text-gray-500">No students found</p>
+              <p className="small-text text-gray-400 mt-1">Try searching by name or roll number</p>
             </div>
           )}
         </div>
