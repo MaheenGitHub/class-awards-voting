@@ -166,22 +166,36 @@ export default function AdminDashboard() {
                 </h3>
                 
                 <div className="space-y-3">
-                  {category.votes.map((vote, index) => (
-                    <div key={`${category.categoryId}-${vote.studentId}`} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-center">
-                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary-100 text-primary-600 font-semibold mr-3">
-                          {index + 1}
+                  {category.votes.map((vote, index) => {
+                    // Check if this vote is tied with the next one
+                    const isTied = index < category.votes.length - 1 && 
+                                 category.votes[index + 1].voteCount === vote.voteCount;
+                    // Check if this vote is tied with the previous one (to avoid duplicate tie labels)
+                    const isPreviousTied = index > 0 && 
+                                        category.votes[index - 1].voteCount === vote.voteCount;
+                    
+                    return (
+                      <div key={`${category.categoryId}-${vote.studentId}`} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary-100 text-primary-600 font-semibold mr-3">
+                            {isTied && !isPreviousTied ? `T${index + 1}` : index + 1}
+                          </div>
+                          <span className="font-medium text-gray-800">{vote.studentName}</span>
+                          {isTied && !isPreviousTied && (
+                            <span className="ml-2 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-full">
+                              TIE
+                            </span>
+                          )}
                         </div>
-                        <span className="font-medium text-gray-800">{vote.studentName}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <div className="bg-primary-100 px-3 py-1 rounded-full">
-                          <span className="text-primary-600 font-semibold">{vote.voteCount}</span>
-                          <span className="text-primary-500 text-sm ml-1">votes</span>
+                        <div className="flex items-center">
+                          <div className="bg-primary-100 px-3 py-1 rounded-full">
+                            <span className="text-primary-600 font-semibold">{vote.voteCount}</span>
+                            <span className="text-primary-500 text-sm ml-1">votes</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                   
                   {category.votes.length === 0 && (
                     <div className="text-center py-8 text-gray-500">
