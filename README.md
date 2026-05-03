@@ -1,8 +1,8 @@
 # Class Voting Awards 🎉
 
 ![Next.js](https://img.shields.io/badge/Next.js-16.2.4-black?style=flat-square&logo=next.js)
-![Firebase](https://img.shields.io/badge/Firebase-9.0.0-ffca28?style=flat-square&logo=firebase)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0.0-blue?style=flat-square&logo=typescript)
+![Firebase](https://img.shields.io/badge/Firebase-12.12.1-ffca28?style=flat-square&logo=firebase)
+![TypeScript](https://img.shields.io/badge/TypeScript-6.0.3-blue?style=flat-square&logo=typescript)
 ![License](https://img.shields.io/badge/License-ISC-green?style=flat-square)
 
 A sophisticated full-stack web application designed for secure class voting with cryptographic anonymity and real-time data management.
@@ -22,11 +22,11 @@ A sophisticated full-stack web application designed for secure class voting with
 
 ## Key Features
 
-### 🔐 True Voter Anonymity
+### 🔐 Cryptographic Anonymity Layer
 - **SHA-256 Hashing**: Cryptographic hashing of user identifiers with secret salt
 - **Irreversible Mapping**: One-way hash prevents voter identification even by database administrators
 - **Collision Prevention**: Unique hash generation ensures vote integrity while maintaining privacy
-- **Temporal Security**: Hashed IDs prevent vote tracking across time periods
+- **Vote Integrity**: Hashed IDs maintain voting security while protecting anonymity
 
 ### 🎓 BITF22 Batch Verification
 - **Domain Validation**: Strict email pattern matching for `.*@bitf22m[0-9]{3}@pucit.edu.pk`
@@ -36,9 +36,9 @@ A sophisticated full-stack web application designed for secure class voting with
 
 ### ⚡ Real-time Voting
 - **Firestore Integration**: Real-time database operations with atomic transactions
-- **Concurrent Voting**: Optimistic locking prevents data corruption during simultaneous submissions
 - **Live Updates**: Instant reflection of voting progress across all connected clients
-- **Conflict Resolution**: Built-in retry mechanism with exponential backoff for network failures
+- **Data Consistency**: Transaction-based operations prevent data corruption
+- **Network Resilience**: Basic error handling for connection issues
 
 ### 🎨 Modular UI with Glassmorphism
 - **50 Categories**: Comprehensive award system with dynamic categorization
@@ -51,15 +51,15 @@ A sophisticated full-stack web application designed for secure class voting with
 | Category | Technology | Version | Purpose |
 |----------|------------|---------|---------|
 | **Framework** | Next.js | 16.2.4 | React-based full-stack framework |
-| **Language** | TypeScript | 5.0.0 | Type-safe development |
+| **Language** | TypeScript | 6.0.3 | Type-safe development |
 | **Styling** | Tailwind CSS | 4.2.4 | Utility-first CSS framework |
-| **Backend** | Firebase | 9.0.0 | Authentication & Database |
+| **Backend** | Firebase | 12.12.1 | Authentication & Database |
 | **Database** | Firestore | - | NoSQL real-time database |
 | **Authentication** | Firebase Auth | - | Google OAuth integration |
 | **Animations** | Framer Motion | 12.38.0 | UI animations and transitions |
 | **Icons** | Heroicons | 2.2.0 | React icon components |
 | **HTTP Client** | React Firebase Hooks | 5.1.1 | Firebase integration |
-| **Build Tool** | Turbopack | - | Next.js bundler |
+| **Build Tool** | Next.js | - | Built-in bundler |
 | **Deployment** | Vercel | - | Cloud hosting platform |
 
 ## Architecture Overview
@@ -135,11 +135,16 @@ User Authentication → Hashed ID Generation → Vote Submission → Atomic Tran
 
 2. Access the application at `http://localhost:3000`
 3. Authenticate with your BITF22 Google account
-4. Navigate to `/admin` for database seeding
-5. The system will automatically populate:
+4. Run the seeding script to populate the database:
+   ```bash
+   npm run seed
+   ```
+5. The script will populate:
    - 50 student records with roll numbers
    - 50 voting categories with descriptions
-   - Security rules and indexes
+   - Initial database structure
+
+**Note**: The Admin Dashboard is currently under development and access is restricted to the developer.
 
 ### Step 4: Launch Application
 
@@ -154,29 +159,36 @@ The application will be available at [http://localhost:3000](http://localhost:30
 ```
 class-voting-awards/
 ├── src/
-│   ├── app/                    # Next.js app directory
-│   │   ├── admin/             # Admin dashboard page
-│   │   ├── globals.css        # Global styles
-│   │   ├── layout.tsx         # Root layout
-│   │   └── page.tsx           # Home page
-│   ├── components/            # React components
-│   │   ├── AuthGuard.tsx      # Authentication guard
+│   ├── app/                   # Next.js app directory
+│   │   ├── admin/            # Admin dashboard page
+│   │   ├── globals.css       # Global styles
+│   │   ├── layout.tsx        # Root layout
+│   │   └── page.tsx          # Home page
+│   ├── components/           # React components
+│   │   ├── AuthGuard.tsx     # Authentication guard
 │   │   ├── Authentication.tsx # Main auth component
+│   │   ├── SearchableDropdown.tsx # Search component
 │   │   └── VotingInterface.tsx # Voting UI
-│   ├── contexts/              # React contexts
-│   │   └── AuthContext.tsx   # Authentication context
-│   ├── lib/                   # Utility libraries
-│   │   ├── auth.ts           # Authentication utilities
-│   │   ├── firebase.ts       # Firebase configuration
-│   │   ├── firestore.ts      # Firestore operations
-│   │   └── initData.ts       # Database initialization
-│   └── types/                # TypeScript definitions
-│       └── index.ts          # Type definitions
-├── public/                   # Static assets
-├── .env.local               # Environment variables
-├── package.json            # Dependencies
-├── tailwind.config.js      # Tailwind configuration
-└── README.md              # This file
+│   ├── contexts/             # React contexts
+│   │   └── AuthContext.tsx  # Authentication context
+│   ├── lib/                  # Utility libraries
+│   │   ├── auth.ts          # Authentication utilities
+│   │   ├── firebase.ts      # Firebase configuration
+│   │   ├── firestore.ts     # Firestore operations
+│   │   └── initData.ts      # Database initialization
+│   └── types/               # TypeScript definitions
+│       └── index.ts         # Type definitions
+├── public/                  # Static assets
+│   └── pics/               # Image assets
+├── scripts/                # Database scripts
+│   ├── seed-production.js  # Production seeding
+│   └── verify-categories.js # Category verification
+├── .env.local             # Environment variables
+├── package.json          # Dependencies
+├── tailwind.config.js    # Tailwind configuration
+├── tsconfig.json         # TypeScript configuration
+├── next.config.js        # Next.js configuration
+└── README.md            # This file
 ```
 
 ## Security Implementation
@@ -389,7 +401,7 @@ We welcome contributions to enhance the voting system. Please follow these guide
 - **Email**: maheen.fatima@bitf22m001.pucit.edu.pk
 
 ### About the Author
-Full-stack developer with expertise in React, TypeScript, and Firebase security implementations. Passionate about creating secure, scalable web applications with emphasis on user privacy and data protection.
+Full-stack developer with expertise in React, TypeScript, and Firebase security implementations. Focused on creating secure, scalable web applications with emphasis on user privacy and data protection.
 
 ## License
 
