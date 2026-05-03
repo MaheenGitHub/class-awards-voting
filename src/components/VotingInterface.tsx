@@ -279,14 +279,14 @@ export default function VotingInterface() {
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="hero-stage p-6 mb-8 text-center"
-                  style={{ backgroundColor: 'var(--accent-pastel)' }}
+                  className="hero-stage p-6 mb-8 text-center bg-emerald-50 border border-emerald-200 rounded-lg"
+                  style={{ boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.1)' }}
                 >
-                  <div className="flex items-center justify-center" style={{ color: 'var(--accent-purple)' }}>
-                    <svg className="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                  <div className="flex items-center justify-center text-emerald-700">
+                    <svg className="w-7 h-7 mr-3 text-emerald-700" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
-                    <span className="font-medium text-lg" style={{ fontFamily: 'Quicksand, sans-serif', color: 'var(--text-primary)' }}>
+                    <span className="font-black text-xl" style={{ fontFamily: 'Quicksand, sans-serif' }}>
                       Selected: {students.find(s => s.id === userVotes[currentCategory.id])?.name}
                     </span>
                   </div>
