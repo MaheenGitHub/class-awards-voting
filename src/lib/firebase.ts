@@ -2,6 +2,11 @@ import { initializeApp } from 'firebase/app'
 import { getAuth, GoogleAuthProvider } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 
+// DEBUG: Log API key for troubleshooting
+console.log("DEBUG: First 5 chars of API Key:", process.env.NEXT_PUBLIC_FIREBASE_API_KEY?.substring(0, 5));
+console.log("DEBUG: API Key exists:", !!process.env.NEXT_PUBLIC_FIREBASE_API_KEY);
+console.log("DEBUG: API Key length:", process.env.NEXT_PUBLIC_FIREBASE_API_KEY?.length);
+
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
