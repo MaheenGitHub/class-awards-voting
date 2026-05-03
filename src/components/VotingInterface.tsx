@@ -201,11 +201,13 @@ export default function VotingInterface() {
       </div>
 
       {/* Split-Screen Layout with Glassmorphism */}
-      <div className="flex gap-12 h-screen px-8" style={{ height: 'calc(100vh - 160px)' }}>
+      <div className="flex gap-12 h-screen px-6 md:px-12" style={{ height: 'calc(100vh - 160px)' }}>
         {/* Left Pane - Hero Question Stage */}
-        <div className="w-1/2 flex flex-col items-center justify-center relative" style={{ backdropFilter: 'blur(12px)', backgroundColor: 'rgba(255, 255, 255, 0.3)' }}>
+        <div className="w-1/2 flex flex-col items-center justify-center relative ml-12 md:ml-16" style={{ backdropFilter: 'blur(12px)', backgroundColor: 'rgba(255, 255, 255, 0.3)' }}>
+          {/* Centered Content Container */}
+          <div className="flex flex-col items-center gap-y-10 w-full max-w-xl px-12 md:px-24">
           {/* Batch of 2026 Badge */}
-          <div className="w-full max-w-3xl mb-4">
+          <div className="w-full max-w-xl">
             <div 
               className="inline-flex items-center gap-2 px-3 py-1 rounded-full"
               style={{ 
@@ -227,7 +229,7 @@ export default function VotingInterface() {
           </div>
 
           {currentCategory && (
-            <div className="w-full max-w-3xl">
+            <div className="w-full">
               {/* Hero Question Card */}
               <AnimatePresence mode="wait">
                 <motion.div
@@ -441,6 +443,7 @@ export default function VotingInterface() {
               )}
             </div>
           )}
+          </div>
         </div>
 
         {/* Right Pane - Student Gallery with Advanced Layered Scrolling */}
