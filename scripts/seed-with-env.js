@@ -104,9 +104,9 @@ const categories = [
   { title: 'The chatter box', description: 'Talks non-stop', emoji: '💬' },
   { title: 'The cool cat', description: 'Effortlessly cool and calm', emoji: '😎' },
   { title: 'The "Dil tou bacha hai g"', description: 'Child at heart', emoji: '🧸' },
-  { title: 'The geet (jab we met)', description: 'Loves romantic Bollywood songs', emoji: '💕' },
+  { title: 'The geet (jab we met)', description: 'Main apni favorite hoon! A lively, talkative, and chill person who lives life to the fullest.', emoji: '�' },
   { title: 'Student of the year', description: 'Perfect student in every way', emoji: '🏆' },
-  { title: 'Pk of the class', description: 'Pakistani pride personified', emoji: '🇵🇰' },
+  { title: 'Pk of the class', description: 'An innocent alien confused by the weird ways of our world.', emoji: '👽' },
   { title: 'Don of the class', description: 'Respected leader of the batch', emoji: '🕶️' },
   { title: 'The devdas', description: 'Dramatic and emotional about everything', emoji: '😢' },
   { title: 'The chulbul Pandy', description: 'Mix of funny and serious', emoji: '👮‍♂️' },
@@ -115,7 +115,7 @@ const categories = [
   { title: 'atif aslam', description: 'Sings like Atif Aslam', emoji: '🎤' },
   { title: 'Doremon', description: 'Has a solution for every problem', emoji: '🔧' },
   { title: 'Nobita', description: 'Relies on friends for help', emoji: '👨‍🎓' },
-  { title: 'Jiyan of the class', description: 'Sweet and innocent', emoji: '🍬' },
+  { title: 'Jiyan of the class', description: 'the strongest!', emoji: '💪' },
   { title: 'teacher\'s favourite', description: 'Loved by all teachers', emoji: '🍎' },
 ];
 
@@ -128,24 +128,27 @@ async function clearCollection(db, collectionName) {
   console.log(`✅ Cleared ${snapshot.size} documents from ${collectionName}`);
 }
 
+// Function to generate deterministic ID from title
+function generateCategoryId(title) {
+  return title.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+}
+
 async function seedDatabase() {
   try {
     console.log('🚀 Starting database seeding...');
-    console.log(`📊 Will add ${students.length} students and ${categories.length} categories`);
+    console.log(`📊 Will update ${students.length} students and ${categories.length} categories`);
     console.log(`👤 Admin email set to: ${process.env.NEXT_PUBLIC_ADMIN_EMAIL}`);
 
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Clear existing data first
-    await clearCollection(db, 'students');
+    // Clear categories collection first to remove duplicates
+    console.log('🗑️  Clearing categories collection to remove duplicates...');
     await clearCollection(db, 'categories');
-    await clearCollection(db, 'votes');
-    await clearCollection(db, 'userVotes');
 
-    // Add students
-    console.log('➕ Adding students to Firestore...');
+    // Add/update students (using roll number as document ID)
+    console.log('➕ Adding/updating students to Firestore...');
     for (const student of students) {
       const studentRef = doc(db, 'students', student.id);
       await setDoc(studentRef, {
@@ -154,13 +157,19 @@ async function seedDatabase() {
         name: student.name
       });
     }
-    console.log(`✅ Added ${students.length} students`);
+    console.log(`✅ Updated ${students.length} students`);
 
-    // Add categories
+    // Add categories (using deterministic IDs)
     console.log('➕ Adding categories to Firestore...');
     for (const category of categories) {
-      const categoryRef = doc(collection(db, 'categories'));
-      await setDoc(categoryRef, category);
+      const categoryId = generateCategoryId(category.title);
+      const categoryRef = doc(db, 'categories', categoryId);
+      await setDoc(categoryRef, {
+        id: categoryId,
+        title: category.title,
+        description: category.description,
+        emoji: category.emoji
+      });
     }
     console.log(`✅ Added ${categories.length} categories`);
 
@@ -189,8 +198,23 @@ async function seedDatabase() {
     console.log('\n📋 All Categories:');
     finalCategories.docs.forEach((doc, index) => {
       const data = doc.data();
-      console.log(`${index + 1}. ${data.emoji} ${data.title}`);
+      console.log(`${index + 1}. ${data.emoji} ${data.title} - ${data.description}`);
     });
+
+    // Specifically check PK and Jiyan categories
+    console.log('\n🔍 Updated Categories Verification:');
+    const pkCategory = finalCategories.docs.find(doc => doc.data().title === 'Pk of the class');
+    const jiyanCategory = finalCategories.docs.find(doc => doc.data().title === 'Jiyan of the class');
+    
+    if (pkCategory) {
+      const pkData = pkCategory.data();
+      console.log(`✅ PK Category: ${pkData.emoji} "${pkData.description}"`);
+    }
+    
+    if (jiyanCategory) {
+      const jiyanData = jiyanCategory.data();
+      console.log(`✅ Jiyan Category: ${jiyanData.emoji} "${jiyanData.description}"`);
+    }
 
     console.log('\n📋 All Students:');
     finalStudents.docs.forEach((doc, index) => {

@@ -4,21 +4,31 @@ import {
   getDoc,
   getDocs,
   setDoc,
+  addDoc,
   updateDoc,
   query,
   where,
   orderBy,
   limit,
   Timestamp,
+  writeBatch,
 } from 'firebase/firestore'
 import { db } from './firebase'
 import { Student, Category, Vote, UserVote, VoteResults } from '@/types'
+import crypto from 'crypto'
 
 // Collections
 const STUDENTS_COLLECTION = 'students'
 const CATEGORIES_COLLECTION = 'categories'
 const VOTES_COLLECTION = 'votes'
 const USER_VOTES_COLLECTION = 'userVotes'
+
+// Hash function for user ID anonymization
+const hashUserId = (userId: string): string => {
+  // Use SHA-256 with a secret salt for hashing
+  const secretSalt = 'bitf22-voting-secret-2024'
+  return crypto.createHash('sha256').update(userId + secretSalt).digest('hex')
+}
 
 // Students
 export const getStudents = async (): Promise<Student[]> => {
@@ -54,36 +64,49 @@ export const addCategory = async (category: Omit<Category, 'id'>) => {
   return docRef.id
 }
 
-// Votes
-export const submitVote = async (anonymousUserId: string, categoryId: string, studentId: string) => {
-  const voteRef = doc(db, VOTES_COLLECTION)
-  await setDoc(voteRef, {
+// Votes - Transaction-based for atomic operations
+export const submitVote = async (userId: string, categoryId: string, studentId: string) => {
+  // Hash the user ID for true anonymity
+  const hashedUserId = hashUserId(userId)
+  
+  // Use writeBatch for atomic operations
+  const batch = writeBatch(db)
+  
+  // Add vote to votes collection with auto-generated ID
+  const votesRef = collection(db, VOTES_COLLECTION)
+  const voteDocRef = doc(votesRef)
+  batch.set(voteDocRef, {
     categoryId,
     studentId,
-    anonymousUserId,
+    anonymousUserId: hashedUserId, // Store hashed ID, not plain UID
     timestamp: Timestamp.now(),
   })
 
-  // Update user votes
-  const userVoteRef = doc(db, USER_VOTES_COLLECTION, anonymousUserId)
+  // Update user votes atomically using hashed ID
+  const userVoteRef = doc(db, USER_VOTES_COLLECTION, hashedUserId)
   const userVoteDoc = await getDoc(userVoteRef)
   
   if (userVoteDoc.exists()) {
-    await updateDoc(userVoteRef, {
+    batch.update(userVoteRef, {
       [categoryId]: studentId,
       lastUpdated: Timestamp.now(),
     })
   } else {
-    await setDoc(userVoteRef, {
+    batch.set(userVoteRef, {
       [categoryId]: studentId,
       createdAt: Timestamp.now(),
       lastUpdated: Timestamp.now(),
     })
   }
+  
+  // Commit the batch atomically
+  await batch.commit()
 }
 
-export const getUserVotes = async (anonymousUserId: string): Promise<UserVote> => {
-  const userVoteRef = doc(db, USER_VOTES_COLLECTION, anonymousUserId)
+export const getUserVotes = async (userId: string): Promise<UserVote> => {
+  // Hash the user ID for lookup
+  const hashedUserId = hashUserId(userId)
+  const userVoteRef = doc(db, USER_VOTES_COLLECTION, hashedUserId)
   const docSnap = await getDoc(userVoteRef)
   
   if (docSnap.exists()) {
@@ -96,8 +119,10 @@ export const getUserVotes = async (anonymousUserId: string): Promise<UserVote> =
   return {}
 }
 
-export const hasUserVoted = async (anonymousUserId: string): Promise<boolean> => {
-  const userVoteRef = doc(db, USER_VOTES_COLLECTION, anonymousUserId)
+export const hasUserVoted = async (userId: string): Promise<boolean> => {
+  // Hash the user ID for lookup
+  const hashedUserId = hashUserId(userId)
+  const userVoteRef = doc(db, USER_VOTES_COLLECTION, hashedUserId)
   const docSnap = await getDoc(userVoteRef)
   return docSnap.exists()
 }
