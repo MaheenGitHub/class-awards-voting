@@ -3,7 +3,7 @@
 ![Next.js](https://img.shields.io/badge/Next.js-16.2.4-black?style=flat-square&logo=next.js)
 ![Firebase](https://img.shields.io/badge/Firebase-12.12.1-ffca28?style=flat-square&logo=firebase)
 ![TypeScript](https://img.shields.io/badge/TypeScript-6.0.3-blue?style=flat-square&logo=typescript)
-![License](https://img.shields.io/badge/License-ISC-green?style=flat-square)
+![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
 
 A sophisticated full-stack web application designed for secure class voting with cryptographic anonymity and real-time data management.
 
@@ -405,7 +405,7 @@ Full-stack developer with expertise in React, TypeScript, and Firebase security 
 
 ## License
 
-This project is licensed under the ISC License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Support
 
