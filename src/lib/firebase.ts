@@ -8,7 +8,7 @@ console.log("DEBUG: API Key exists:", !!process.env.NEXT_PUBLIC_FIREBASE_API_KEY
 console.log("DEBUG: API Key length:", process.env.NEXT_PUBLIC_FIREBASE_API_KEY?.length);
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  apiKey: "REDACTED_API_KEY",
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
