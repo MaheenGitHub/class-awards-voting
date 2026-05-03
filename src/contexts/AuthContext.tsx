@@ -10,7 +10,7 @@ import {
 import { auth, googleProvider } from '@/lib/firebase'
 import { createAnonymousUserId, isValidDomain, isAdmin } from '@/lib/auth'
 import { getStudents } from '@/lib/firestore'
-import { AnonymousUser } from '@/types'
+import { AnonymousUser, Student } from '@/types'
 
 interface AuthContextType {
   user: FirebaseUser | null
@@ -46,7 +46,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // Verify user is in the students collection (BITF22 batch verification)
         try {
-          const students = await getStudents()
+          // Add timeout to prevent infinite loading
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Student verification timeout')), 5000)
+          )
+          
+          const students = await Promise.race([getStudents(), timeoutPromise]) as Student[]
           const isStudentInBatch = students.some(student => 
             student.rollNumber?.toLowerCase() === userEmail.split('@')[0].toLowerCase()
           )
