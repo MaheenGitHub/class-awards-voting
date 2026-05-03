@@ -1,11 +1,23 @@
-// Set environment variables programmatically
-process.env.NEXT_PUBLIC_FIREBASE_API_KEY = 'AIzaSyBKz58SfKAm6XjG9UsJpFJPgLXI9ApQMKg';
-process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN = 'class-voting-app-f22.firebaseapp.com';
-process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID = 'class-voting-app-f22';
-process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET = 'class-voting-app-f22.firebasestorage.app';
-process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID = '450022024053';
-process.env.NEXT_PUBLIC_FIREBASE_APP_ID = '1:450022024053:web:260b109aa538d317b1693c';
-process.env.NEXT_PUBLIC_ADMIN_EMAIL = 'bitf22m031@pucit.edu.pk';
+// Load environment variables from .env.local
+require('dotenv').config();
+
+// Verify required environment variables are set
+const requiredEnvVars = [
+  'NEXT_PUBLIC_FIREBASE_API_KEY',
+  'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
+  'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
+  'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET',
+  'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID',
+  'NEXT_PUBLIC_FIREBASE_APP_ID'
+];
+
+const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+if (missingVars.length > 0) {
+  console.error('❌ Missing required environment variables:');
+  missingVars.forEach(varName => console.error(`   - ${varName}`));
+  console.error('\nPlease create a .env.local file with your Firebase configuration.');
+  process.exit(1);
+}
 
 // Now run the seed database function
 const { initializeApp } = require('firebase/app');
