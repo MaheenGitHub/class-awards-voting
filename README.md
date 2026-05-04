@@ -398,7 +398,6 @@ We welcome contributions to enhance the voting system. Please follow these guide
 
 - **GitHub**: [MaheenGitHub](https://github.com/MaheenGitHub)
 - **LinkedIn**: [Maheen Fatima](https://www.linkedin.com/in/maheenfatimaa)
-- **Email**: maheen.fatima@bitf22m001.pucit.edu.pk
 
 ### About the Author
 Full-stack developer with expertise in React, TypeScript, and Firebase security implementations. Focused on creating secure, scalable web applications with emphasis on user privacy and data protection.
