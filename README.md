@@ -5,7 +5,7 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-6.0.3-blue?style=flat-square&logo=typescript)
 ![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
 
-A sophisticated full-stack web application designed for secure class voting with cryptographic anonymity and real-time data management.
+A sophisticated full-stack web application designed for secure class voting with cryptographic anonymity and real-time data management. yay
 
 ## Table of Contents
 
